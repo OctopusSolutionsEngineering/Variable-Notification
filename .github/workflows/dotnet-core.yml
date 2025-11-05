@@ -1,0 +1,41 @@
+name: .NET Core 
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Version
+      run: echo "PACKAGE_VERSION=$(date +'%Y.%m.%d').$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x'
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+    - name: Create artifacts folder
+      run: |
+        mkdir "$GITHUB_WORKSPACE/artifacts"
+        mkdir "$GITHUB_WORKSPACE/artifacts/accept_message"
+        mkdir "$GITHUB_WORKSPACE/artifacts/process_message"
+    - name: Publish OctoPetShopDatabase
+      run: dotnet publish process_message/process_message.sln --configuration Release --no-restore --output "$GITHUB_WORKSPACE/artifacts/process_message"
+    - name: Create a Zip package 🐙
+      uses: OctopusDeploy/create-zip-package-action@v3
+      with:
+        package_id: 'process_message.Azure.Function'
+        version: ${{ env.PACKAGE_VERSION }}
+        output_folder: '$GITHUB_WORKSPACE/artifacts'
+        base_path: $GITHUB_WORKSPACE/artifacts/process_message
+        files: |
+          **/*.*
