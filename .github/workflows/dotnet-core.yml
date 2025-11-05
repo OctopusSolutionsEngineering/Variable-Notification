@@ -35,7 +35,7 @@ jobs:
       with:
         package_id: 'process_message.Azure.Function'
         version: ${{ env.PACKAGE_VERSION }}
-        output_folder: '$GITHUB_WORKSPACE/artifacts'
-        base_path: $GITHUB_WORKSPACE/artifacts/process_message
+        output_folder: 'artifacts'
+        base_path: artifacts/process_message
         files: |
           **/*.*
